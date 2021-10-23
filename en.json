@@ -1,0 +1,8 @@
+{
+  "Description": "Kenku FM Remote.",
+  "Name": "Kenku FM",
+  "fm.kenku.remote.open": {
+    "Name": "Open URL",
+    "Tooltip": "Opens a custom URL in the Remote App on Kenku FM"
+  }
+}

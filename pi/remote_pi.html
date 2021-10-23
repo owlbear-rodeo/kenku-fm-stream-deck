@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>fm.kenku.remote.pi</title>
+    <meta charset="utf-8" />
+    <script src="remote_pi.js"></script>
+    <link rel="stylesheet" href="sdpi.css" />
+  </head>
+  <body>
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">URL</div>
+      <input
+        class="sdpi-item-value"
+        type="text"
+        id="url"
+        required
+        oninput="sendSettings()"
+      />
+    </div>
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">Address</div>
+      <input
+        class="sdpi-item-value"
+        id="address"
+        value="127.0.0.1"
+        placeholder="e.g. 127.0.0.1"
+        required
+        pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
+        oninput="sendSettings()"
+      />
+    </div>
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">Port</div>
+      <input
+        class="sdpi-item-value"
+        id="port"
+        value="3333"
+        placeholder="e.g. 3333"
+        required
+        pattern="\d+"
+        oninput="sendSettings()"
+      />
+    </div>
+  </body>
+</html>

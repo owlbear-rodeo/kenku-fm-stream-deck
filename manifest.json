@@ -1,0 +1,42 @@
+{
+  "Actions": [
+    {
+      "Icon": "actionIcon",
+      "Name": "Open URL",
+      "States": [
+        {
+          "Image": "actionDefaultImage",
+          "TitleAlignment": "bottom",
+          "FontSize": "16"
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "Tooltip": "Opens a custom URL in the Remote App on Kenku FM",
+      "UUID": "fm.kenku.remote.open"
+    }
+  ],
+  "Category": "Kenku FM",
+  "CategoryIcon": "categoryIcon",
+  "SDKVersion": 2,
+  "Author": "Kenku FM",
+  "CodePath": "plugin/remote.html",
+  "PropertyInspectorPath": "pi/remote_pi.html",
+  "Description": "Stream Deck plugin for Kenku FM",
+  "Name": "Kenku FM",
+  "Icon": "pluginIcon",
+  "URL": "https://www.kenku.fm/",
+  "Version": "0.1",
+  "OS": [
+    {
+      "Platform": "mac",
+      "MinimumVersion": "10.11"
+    },
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
+  ],
+  "Software": {
+    "MinimumVersion": "4.1"
+  }
+}
