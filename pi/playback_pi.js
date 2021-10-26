@@ -33,8 +33,13 @@ function connectElgatoStreamDeckSocket(
     if (event === "didReceiveSettings") {
       const settings = payload.settings;
 
-      if (settings.url) {
-        document.getElementById("url").value = settings.url;
+      // If settings is empty then populate it from the initial values
+      if (Object.keys(settings).length === 0) {
+        sendSettings();
+      }
+
+      if (settings.action) {
+        document.getElementById("playbackSelect").value = settings.action;
       }
       if (settings.address) {
         document.getElementById("address").value = settings.address;
@@ -53,7 +58,7 @@ function sendSettings() {
         event: "setSettings",
         context: uuid,
         payload: {
-          url: document.getElementById("url").value,
+          action: document.getElementById("playbackSelect").value,
           address: document.getElementById("address").value,
           port: document.getElementById("port").value,
         },

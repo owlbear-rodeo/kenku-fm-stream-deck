@@ -1,29 +1,42 @@
 {
   "Actions": [
     {
-      "Icon": "actionIcon",
-      "Name": "Open URL",
+      "Icon": "assets/actionPlayIcon",
+      "Name": "Play URL",
       "States": [
         {
-          "Image": "actionDefaultImage",
+          "Image": "assets/actionPlayImage",
           "TitleAlignment": "bottom",
           "FontSize": "16"
         }
       ],
-      "SupportedInMultiActions": false,
-      "Tooltip": "Opens a custom URL in the Remote App on Kenku FM",
-      "UUID": "fm.kenku.remote.open"
+      "Tooltip": "Plays a custom URL in the Remote App on Kenku FM",
+      "UUID": "fm.kenku.remote.play",
+      "PropertyInspectorPath": "pi/play_pi.html"
+    },
+    {
+      "Icon": "assets/actionPlaybackIcon",
+      "Name": "Playback",
+      "States": [
+        {
+          "Image": "assets/blankImage",
+          "TitleAlignment": "bottom",
+          "FontSize": "16"
+        }
+      ],
+      "Tooltip": "Control playback in the Remote App on Kenku FM",
+      "UUID": "fm.kenku.remote.playback",
+      "PropertyInspectorPath": "pi/playback_pi.html"
     }
   ],
   "Category": "Kenku FM",
-  "CategoryIcon": "categoryIcon",
+  "CategoryIcon": "assets/categoryIcon",
   "SDKVersion": 2,
   "Author": "Kenku FM",
   "CodePath": "plugin/remote.html",
-  "PropertyInspectorPath": "pi/remote_pi.html",
   "Description": "Stream Deck plugin for Kenku FM",
   "Name": "Kenku FM",
-  "Icon": "pluginIcon",
+  "Icon": "assets/pluginIcon",
   "URL": "https://www.kenku.fm/",
   "Version": "0.1",
   "OS": [
