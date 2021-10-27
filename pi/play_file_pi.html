@@ -1,23 +1,37 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>fm.kenku.remote.play.pi</title>
+    <title>fm.kenku.remote.play-file.pi</title>
     <meta charset="utf-8" />
-    <script src="play_pi.js"></script>
+    <script src="play_file_pi.js"></script>
     <link rel="stylesheet" href="css/sdpi.css" />
+    <style>
+      .sdpi-file-info {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 132px;
+        direction: rtl;
+        text-align: left;
+      }
+    </style>
   </head>
   <body>
-    <!-- Hidden title input to track the title in the actions settings -->
-    <input id="title" style="display: none" />
-    <div class="sdpi-item">
-      <div class="sdpi-item-label">URL</div>
-      <input
-        class="sdpi-item-value"
-        type="text"
-        id="url"
-        required
-        oninput="sendSettings()"
-      />
+    <div class="sdpi-item" id="my_private_file_selector">
+      <div class="sdpi-item-label">Select File</div>
+      <div class="sdpi-item-group file" id="filepickergroup">
+        <input
+          class="sdpi-item-value"
+          type="file"
+          id="elgfilepicker"
+          accept=".mp3, .mp4, .wav, .ogg, .webm, .flac"
+          onchange="sendSettings()"
+        />
+        <label class="sdpi-file-info" for="elgfilepicker">no file...</label>
+        <label class="sdpi-file-label" for="elgfilepicker"
+          >Choose file...</label
+        >
+      </div>
     </div>
     <div type="checkbox" class="sdpi-item">
       <div class="sdpi-item-label">Loop</div>
@@ -55,5 +69,7 @@
         oninput="sendSettings()"
       />
     </div>
+    <!-- Hidden title input to track the title in the actions settings -->
+    <input id="title" style="display: none" />
   </body>
 </html>

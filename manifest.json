@@ -1,7 +1,7 @@
 {
   "Actions": [
     {
-      "Icon": "assets/actionPlayIcon",
+      "Icon": "assets/actionPlayURLIcon",
       "Name": "Play URL",
       "States": [
         {
@@ -11,8 +11,22 @@
         }
       ],
       "Tooltip": "Plays a custom URL in the Remote App on Kenku FM",
-      "UUID": "fm.kenku.remote.play",
-      "PropertyInspectorPath": "pi/play_pi.html"
+      "UUID": "fm.kenku.remote.play-url",
+      "PropertyInspectorPath": "pi/play_url_pi.html"
+    },
+    {
+      "Icon": "assets/actionPlayFileIcon",
+      "Name": "Play File",
+      "States": [
+        {
+          "Image": "assets/actionPlayImage",
+          "TitleAlignment": "bottom",
+          "FontSize": "16"
+        }
+      ],
+      "Tooltip": "Plays a file in the Remote App on Kenku FM",
+      "UUID": "fm.kenku.remote.play-file",
+      "PropertyInspectorPath": "pi/play_file_pi.html"
     },
     {
       "Icon": "assets/actionPlaybackIcon",

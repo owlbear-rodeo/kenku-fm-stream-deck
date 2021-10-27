@@ -8,7 +8,6 @@ const DestinationEnum = Object.freeze({
 });
 
 const playAction = {
-  type: "fm.kenku.remote.play",
   onKeyDown: function (context, settings) {
     fetch(`http://${settings.address}:${settings.port}/play`, {
       method: "POST",
@@ -62,7 +61,6 @@ const playAction = {
 const cachedURLs = {};
 
 const playbackAction = {
-  type: "fm.kenku.remote.playback",
   onKeyDown: function (context, settings) {
     fetch(
       `http://${settings.address}:${settings.port}/playback/${settings.action}`,
@@ -151,7 +149,8 @@ const playbackAction = {
 };
 
 const actions = {
-  "fm.kenku.remote.play": playAction,
+  "fm.kenku.remote.play-url": playAction,
+  "fm.kenku.remote.play-file": playAction,
   "fm.kenku.remote.playback": playbackAction,
 };
 
