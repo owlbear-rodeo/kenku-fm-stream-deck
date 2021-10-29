@@ -67,7 +67,7 @@ function sendSettings() {
     if (file.value) {
       // Keep encoded but replace slashes and add file protocol
       const encodedPath = file.value.replace(/^C:\\fakepath\\/, "");
-      url = `file://${encodedPath.replace(/%2F/g, "/")}`;
+      url = `file://${encodedPath.replace(/(%2F)|(%5C)/g, "/").replace(/%3A/g, ":")}`;
       // Set file info text
       info.textContent = decodeURIComponent(encodedPath);
     } else if (info.textContent) {
