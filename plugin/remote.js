@@ -10,20 +10,11 @@ const DestinationEnum = Object.freeze({
 const playIDAction = {
   onKeyDown: async function (context, settings) {
     try {
-      const response = await fetch(
-        `http://${settings.address}:${settings.port}/v1/play/id`,
-        {
-          method: "PUT",
-          body: JSON.stringify({
-            id: settings.id,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (!response.ok) throw Error();
-    } catch {
+      await api(settings.address, settings.port, "play/id", "PUT", {
+        id: settings.id,
+      });
+    } catch (e) {
+      console.error(e);
       websocket.send(
         JSON.stringify({
           event: "showAlert",
@@ -37,21 +28,12 @@ const playIDAction = {
 const playURLAction = {
   onKeyDown: async function (context, settings) {
     try {
-      const response = await fetch(
-        `http://${settings.address}:${settings.port}/v1/play/url`,
-        {
-          method: "PUT",
-          body: JSON.stringify({
-            url: settings.url,
-            title: settings.title,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (!response.ok) throw Error();
-    } catch {
+      await api(settings.address, settings.port, "play/url", "PUT", {
+        url: settings.url,
+        title: settings.title,
+      });
+    } catch (e) {
+      console.error(e);
       websocket.send(
         JSON.stringify({
           event: "showAlert",
@@ -79,38 +61,60 @@ const playURLAction = {
   },
 };
 
+// Cache playback action images with a record that maps urls to their base64 encoding
 const cachedURLs = {};
 
 const playbackAction = {
-  onKeyDown: function (context, settings) {
-    fetch(
-      `http://${settings.address}:${settings.port}/v1/playback/${settings.action}`,
-      {
-        method: "POST",
-        body: JSON.stringify({}),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    )
-      .then((reponse) => {
-        if (!reponse.ok) {
-          websocket.send(
-            JSON.stringify({
-              event: "showAlert",
-              context: context,
-            })
+  onKeyDown: async function (context, settings) {
+    try {
+      const playback = await api(settings.address, settings.port, "playback");
+      switch (settings.action) {
+        case "play-pause":
+          await api(
+            settings.address,
+            settings.port,
+            playback.playing ? "playback/pause" : "playback/play",
+            "PUT"
           );
-        }
-      })
-      .catch(() => {
-        websocket.send(
-          JSON.stringify({
-            event: "showAlert",
-            context: context,
-          })
-        );
-      });
+          break;
+        case "increase-volume":
+          await api(settings.address, settings.port, "playback/volume", "PUT", {
+            volume: playback.volume + 0.05,
+          });
+          break;
+        case "decrease-volume":
+          await api(settings.address, settings.port, "playback/volume", "PUT", {
+            volume: playback.volume - 0.05,
+          });
+          break;
+        case "mute":
+          await api(settings.address, settings.port, "playback/mute", "PUT", {
+            mute: !playback.muted,
+          });
+          break;
+        case "next":
+          await api(settings.address, settings.port, "playback/next", "POST");
+          break;
+        case "previous":
+          await api(
+            settings.address,
+            settings.port,
+            "playback/previous",
+            "POST"
+          );
+          break;
+        default:
+          throw Error("Action not implmented");
+      }
+    } catch (e) {
+      console.error(e);
+      websocket.send(
+        JSON.stringify({
+          event: "showAlert",
+          context: context,
+        })
+      );
+    }
   },
   onDidReceiveSettings: function (context, settings) {
     this.updateImage(context, settings);
@@ -142,6 +146,12 @@ const playbackAction = {
           context,
           "../assets/actionIncreaseVolumeImage@2x.jpg"
         );
+        break;
+      case "next":
+        this.setImageFromURL(context, "../assets/actionNextImage@2x.jpg");
+        break;
+      case "previous":
+        this.setImageFromURL(context, "../assets/actionPreviousImage@2x.jpg");
         break;
     }
   },
@@ -217,6 +227,11 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent) {
   };
 }
 
+/**
+ * Convert an image from a url into base64
+ * @param {string} url
+ * @param {() => string} callback
+ */
 function toDataURL(url, callback) {
   var xhr = new XMLHttpRequest();
   xhr.onload = function () {
@@ -229,4 +244,43 @@ function toDataURL(url, callback) {
   xhr.open("GET", url);
   xhr.responseType = "blob";
   xhr.send();
+}
+
+/**
+ * Throw an error if the given response failed
+ * @param {Response} response
+ */
+function check(response) {
+  if (!response.ok) throw Error(response.statusText);
+}
+
+/**
+ * Simple wrapper around fetch providing JSON serialization and request info formatting
+ * @param {string} address
+ * @param {number|string} port
+ * @param {string} path
+ * @param {("GET"|"POST"|"PUT")} method
+ * @param {any} body
+ * @param {string} version
+ * @returns {Promise<Response>} The api response
+ * @throws {Error} Throws an error when the response is not ok
+ */
+async function api(
+  address,
+  port,
+  path,
+  method = "GET",
+  body = {},
+  version = "v1"
+) {
+  const response = await fetch(`http://${address}:${port}/${version}/${path}`, {
+    method: method,
+    body: method === "GET" ? undefined : JSON.stringify(body),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  check(response);
+  const json = await response.json();
+  return json;
 }
