@@ -37,12 +37,8 @@ function connectElgatoStreamDeckSocket(
       if (Object.keys(settings).length === 0) {
         sendSettings();
       }
-
-      if (settings.title) {
-        document.getElementById("title").value = settings.title;
-      }
-      if (settings.url) {
-        document.getElementById("url").value = settings.url;
+      if (settings.id) {
+        document.getElementById("id").value = settings.id;
       }
       if (settings.address) {
         document.getElementById("address").value = settings.address;
@@ -61,8 +57,7 @@ function sendSettings() {
         event: "setSettings",
         context: uuid,
         payload: {
-          title: document.getElementById("title").value,
-          url: document.getElementById("url").value,
+          id: document.getElementById("id").value,
           address: document.getElementById("address").value,
           port: document.getElementById("port").value,
         },

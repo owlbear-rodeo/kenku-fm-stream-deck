@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>fm.kenku.remote.play-url.pi</title>
+    <title>fm.kenku.remote.play-id.pi</title>
     <meta charset="utf-8" />
-    <script src="play_url_pi.js"></script>
+    <script src="play_id_pi.js"></script>
     <link rel="stylesheet" href="css/sdpi.css" />
   </head>
   <body>
     <div class="sdpi-item">
-      <div class="sdpi-item-label">URL</div>
+      <div class="sdpi-item-label">ID</div>
       <input
         class="sdpi-item-value"
         type="text"
-        id="url"
+        id="id"
         required
         oninput="sendSettings()"
       />
@@ -41,7 +41,5 @@
         oninput="sendSettings()"
       />
     </div>
-    <!-- Hidden title input to track the title in the actions settings -->
-    <input id="title" style="display: none" />
   </body>
 </html>

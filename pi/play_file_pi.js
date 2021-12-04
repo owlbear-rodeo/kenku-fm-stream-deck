@@ -45,9 +45,6 @@ function connectElgatoStreamDeckSocket(
         document.querySelector(".sdpi-file-info").textContent =
           decodeURIComponent(settings.url.replace("file://", ""));
       }
-      if (settings.loop) {
-        document.getElementById("loop").checked = settings.loop;
-      }
       if (settings.address) {
         document.getElementById("address").value = settings.address;
       }
@@ -67,7 +64,9 @@ function sendSettings() {
     if (file.value) {
       // Keep encoded but replace slashes and add file protocol
       const encodedPath = file.value.replace(/^C:\\fakepath\\/, "");
-      url = `file://${encodedPath.replace(/(%2F)|(%5C)/g, "/").replace(/%3A/g, ":")}`;
+      url = `file://${encodedPath
+        .replace(/(%2F)|(%5C)/g, "/")
+        .replace(/%3A/g, ":")}`;
       // Set file info text
       info.textContent = decodeURIComponent(encodedPath);
     } else if (info.textContent) {
@@ -85,7 +84,6 @@ function sendSettings() {
         payload: {
           title: document.getElementById("title").value,
           url: url,
-          loop: document.getElementById("loop").checked,
           address: document.getElementById("address").value,
           port: document.getElementById("port").value,
         },

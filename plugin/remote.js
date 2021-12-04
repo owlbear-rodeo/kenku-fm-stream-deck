@@ -7,37 +7,58 @@ const DestinationEnum = Object.freeze({
   SOFTWARE_ONLY: 2,
 });
 
-const playAction = {
-  onKeyDown: function (context, settings) {
-    fetch(`http://${settings.address}:${settings.port}/play`, {
-      method: "POST",
-      body: JSON.stringify({
-        url: settings.url,
-        loop: settings.loop,
-        title: settings.title,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((reponse) => {
-        if (!reponse.ok) {
-          websocket.send(
-            JSON.stringify({
-              event: "showAlert",
-              context: context,
-            })
-          );
+const playIDAction = {
+  onKeyDown: async function (context, settings) {
+    try {
+      const response = await fetch(
+        `http://${settings.address}:${settings.port}/v1/play/id`,
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            id: settings.id,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-      })
-      .catch(() => {
-        websocket.send(
-          JSON.stringify({
-            event: "showAlert",
-            context: context,
-          })
-        );
-      });
+      );
+      if (!response.ok) throw Error();
+    } catch {
+      websocket.send(
+        JSON.stringify({
+          event: "showAlert",
+          context: context,
+        })
+      );
+    }
+  },
+};
+
+const playURLAction = {
+  onKeyDown: async function (context, settings) {
+    try {
+      const response = await fetch(
+        `http://${settings.address}:${settings.port}/v1/play/url`,
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            url: settings.url,
+            title: settings.title,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (!response.ok) throw Error();
+    } catch {
+      websocket.send(
+        JSON.stringify({
+          event: "showAlert",
+          context: context,
+        })
+      );
+    }
   },
   onTitleParametersDidChange(context, settings, title) {
     // Ignore title change if settings not hydrated yet
@@ -63,7 +84,7 @@ const cachedURLs = {};
 const playbackAction = {
   onKeyDown: function (context, settings) {
     fetch(
-      `http://${settings.address}:${settings.port}/playback/${settings.action}`,
+      `http://${settings.address}:${settings.port}/v1/playback/${settings.action}`,
       {
         method: "POST",
         body: JSON.stringify({}),
@@ -149,8 +170,9 @@ const playbackAction = {
 };
 
 const actions = {
-  "fm.kenku.remote.play-url": playAction,
-  "fm.kenku.remote.play-file": playAction,
+  "fm.kenku.remote.play-id": playIDAction,
+  "fm.kenku.remote.play-url": playURLAction,
+  "fm.kenku.remote.play-file": playURLAction,
   "fm.kenku.remote.playback": playbackAction,
 };
 
