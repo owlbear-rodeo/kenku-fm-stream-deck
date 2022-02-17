@@ -25,6 +25,12 @@ function connectElgatoStreamDeckSocket(
         context: uuid,
       })
     );
+    websocket.send(
+      JSON.stringify({
+        event: "getGlobalSettings",
+        context: uuid,
+      })
+    );
   };
 
   websocket.onmessage = function (evt) {
@@ -40,6 +46,9 @@ function connectElgatoStreamDeckSocket(
       if (settings.id) {
         document.getElementById("id").value = settings.id;
       }
+    } else if (event === "didReceiveGlobalSettings") {
+      const settings = payload.settings;
+
       if (settings.address) {
         document.getElementById("address").value = settings.address;
       }
@@ -58,6 +67,19 @@ function sendSettings() {
         context: uuid,
         payload: {
           id: document.getElementById("id").value,
+        },
+      })
+    );
+  }
+}
+
+function sendGlobalSettings() {
+  if (websocket && websocket.readyState === 1) {
+    websocket.send(
+      JSON.stringify({
+        event: "setGlobalSettings",
+        context: uuid,
+        payload: {
           address: document.getElementById("address").value,
           port: document.getElementById("port").value,
         },

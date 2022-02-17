@@ -1,6 +1,9 @@
 let websocket = null;
 let uuid = null;
 
+let remoteAddress = "127.0.0.1";
+let remotePort = "3333";
+
 const DestinationEnum = Object.freeze({
   HARDWARE_AND_SOFTWARE: 0,
   HARDWARE_ONLY: 1,
@@ -10,7 +13,7 @@ const DestinationEnum = Object.freeze({
 const playIDAction = {
   onKeyDown: async function (context, settings) {
     try {
-      await api(settings.address, settings.port, "playlist/play", "PUT", {
+      await api("playlist/play", "PUT", {
         id: settings.id,
       });
     } catch (e) {
@@ -31,16 +34,10 @@ const cachedURLs = {};
 const playbackAction = {
   onKeyDown: async function (context, settings) {
     try {
-      const playback = await api(
-        settings.address,
-        settings.port,
-        "playlist/playback"
-      );
+      const playback = await api("playlist/playback");
       switch (settings.action) {
         case "play-pause":
           await api(
-            settings.address,
-            settings.port,
             playback.playing
               ? "playlist/playback/pause"
               : "playlist/playback/play",
@@ -48,53 +45,25 @@ const playbackAction = {
           );
           break;
         case "increase-volume":
-          await api(
-            settings.address,
-            settings.port,
-            "playlist/playback/volume",
-            "PUT",
-            {
-              volume: playback.volume + 0.05,
-            }
-          );
+          await api("playlist/playback/volume", "PUT", {
+            volume: playback.volume + 0.05,
+          });
           break;
         case "decrease-volume":
-          await api(
-            settings.address,
-            settings.port,
-            "playlist/playback/volume",
-            "PUT",
-            {
-              volume: playback.volume - 0.05,
-            }
-          );
+          await api("playlist/playback/volume", "PUT", {
+            volume: playback.volume - 0.05,
+          });
           break;
         case "mute":
-          await api(
-            settings.address,
-            settings.port,
-            "playlist/playback/mute",
-            "PUT",
-            {
-              mute: !playback.muted,
-            }
-          );
+          await api("playlist/playback/mute", "PUT", {
+            mute: !playback.muted,
+          });
           break;
         case "next":
-          await api(
-            settings.address,
-            settings.port,
-            "playlist/playback/next",
-            "POST"
-          );
+          await api("playlist/playback/next", "POST");
           break;
         case "previous":
-          await api(
-            settings.address,
-            settings.port,
-            "playlist/playback/previous",
-            "POST"
-          );
+          await api("playlist/playback/previous", "POST");
           break;
         default:
           throw Error("Action not implmented");
@@ -196,6 +165,12 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent) {
         uuid: inPluginUUID,
       })
     );
+    websocket.send(
+      JSON.stringify({
+        event: "getGlobalSettings",
+        context: inPluginUUID,
+      })
+    );
   };
 
   websocket.onmessage = function (evt) {
@@ -213,6 +188,25 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent) {
       const { settings, title } = payload;
       if (actions[action] && actions[action].onTitleParametersDidChange) {
         actions[action].onTitleParametersDidChange(context, settings, title);
+      }
+    } else if (event === "didReceiveGlobalSettings") {
+      const { settings } = payload;
+
+      // If global settings is empty populate initial values
+      if (Object.keys(settings).length === 0) {
+        websocket.send(
+          JSON.stringify({
+            event: "setGlobalSettings",
+            context,
+            payload: {
+              address: remoteAddress,
+              port: remotePort,
+            },
+          })
+        );
+      } else {
+        remoteAddress = settings.address;
+        remotePort = settings.port;
       }
     }
   };
@@ -247,8 +241,6 @@ function check(response) {
 
 /**
  * Simple wrapper around fetch providing JSON serialization and request info formatting
- * @param {string} address
- * @param {number|string} port
  * @param {string} path
  * @param {("GET"|"POST"|"PUT")} method
  * @param {any} body
@@ -256,21 +248,17 @@ function check(response) {
  * @returns {Promise<Response>} The api response
  * @throws {Error} Throws an error when the response is not ok
  */
-async function api(
-  address,
-  port,
-  path,
-  method = "GET",
-  body = {},
-  version = "v1"
-) {
-  const response = await fetch(`http://${address}:${port}/${version}/${path}`, {
-    method: method,
-    body: method === "GET" ? undefined : JSON.stringify(body),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+async function api(path, method = "GET", body = {}, version = "v1") {
+  const response = await fetch(
+    `http://${remoteAddress}:${remotePort}/${version}/${path}`,
+    {
+      method: method,
+      body: method === "GET" ? undefined : JSON.stringify(body),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
   check(response);
   const json = await response.json();
   return json;
