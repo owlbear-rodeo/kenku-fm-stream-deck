@@ -27,6 +27,20 @@
       "Tooltip": "Control playback for a playlist in the Kenku Player app",
       "UUID": "fm.kenku.remote.playlist-playback",
       "PropertyInspectorPath": "pi/playlist_playback_pi.html"
+    },
+    {
+      "Icon": "assets/actionPlayIDIcon",
+      "Name": "Play Sound/Soundboard",
+      "States": [
+        {
+          "Image": "assets/actionSoundboardPlayImage",
+          "TitleAlignment": "bottom",
+          "FontSize": "16"
+        }
+      ],
+      "Tooltip": "Plays a sound or soundboard by ID in the Kenku Player app",
+      "UUID": "fm.kenku.remote.soundboard-play",
+      "PropertyInspectorPath": "pi/soundboard_play_pi.html"
     }
   ],
   "Category": "Kenku FM",

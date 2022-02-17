@@ -32,6 +32,24 @@ const playlistPlayAction = {
   },
 };
 
+const soundboardPlayAction = {
+  onKeyDown: async function (context, settings) {
+    try {
+      await api("soundboard/play", "PUT", {
+        id: settings.id,
+      });
+    } catch (e) {
+      console.error(e);
+      websocket.send(
+        JSON.stringify({
+          event: "showAlert",
+          context: context,
+        })
+      );
+    }
+  },
+};
+
 // Cache playback action images with a record that maps urls to their base64 encoding
 const cachedURLs = {};
 
@@ -147,6 +165,7 @@ const playlistPlaybackAction = {
 
 const actions = {
   "fm.kenku.remote.playlist-play": playlistPlayAction,
+  "fm.kenku.remote.soundboard-play": soundboardPlayAction,
   "fm.kenku.remote.playlist-playback": playlistPlaybackAction,
 };
 
