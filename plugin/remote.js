@@ -3,6 +3,10 @@ let uuid = null;
 
 let remoteAddress = "127.0.0.1";
 let remotePort = "3333";
+let playback = {
+  playlist: undefined,
+  soundboard: undefined,
+};
 
 const DestinationEnum = Object.freeze({
   HARDWARE_AND_SOFTWARE: 0,
@@ -171,6 +175,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent) {
         context: inPluginUUID,
       })
     );
+    startPlaybackPolling();
   };
 
   websocket.onmessage = function (evt) {
@@ -262,4 +267,24 @@ async function api(path, method = "GET", body = {}, version = "v1") {
   check(response);
   const json = await response.json();
   return json;
+}
+
+function startPlaybackPolling() {
+  const request = async () => {
+    const playlist = await api("playlist/playback");
+    const soundboard = await api("soundboard/playback");
+    return {
+      playlist,
+      soundboard,
+    };
+  };
+  const breaker = new CircuitBreaker(request);
+  setInterval(async () => {
+    try {
+      const result = await breaker.fire();
+      if (result && result.playlist && result.soundboard) {
+        playback = result;
+      }
+    } catch {}
+  }, 1000);
 }
