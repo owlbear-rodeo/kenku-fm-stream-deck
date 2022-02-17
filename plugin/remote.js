@@ -3,10 +3,6 @@ let uuid = null;
 
 let remoteAddress = "127.0.0.1";
 let remotePort = "3333";
-let playback = {
-  playlist: undefined,
-  soundboard: undefined,
-};
 
 const DestinationEnum = Object.freeze({
   HARDWARE_AND_SOFTWARE: 0,
@@ -32,12 +28,25 @@ const playlistPlayAction = {
   },
 };
 
+// A mapping of ids to the stream deck context for sounds that are currently playing
+const playingSounds = {};
+
 const soundboardPlayAction = {
   onKeyDown: async function (context, settings) {
     try {
-      await api("soundboard/play", "PUT", {
-        id: settings.id,
-      });
+      if (settings.id in playingSounds) {
+        await api("soundboard/stop", "PUT", {
+          id: settings.id,
+        });
+        this.updateImage(context, false);
+        delete playingSounds[settings.id];
+      } else {
+        await api("soundboard/play", "PUT", {
+          id: settings.id,
+        });
+        this.updateImage(context, true);
+        playingSounds[settings.id] = context;
+      }
     } catch (e) {
       console.error(e);
       websocket.send(
@@ -48,10 +57,14 @@ const soundboardPlayAction = {
       );
     }
   },
+  updateImage: function (context, showStopImage) {
+    if (showStopImage) {
+      setImageFromURL(context, "../assets/actionSoundboardStopImage@2x.jpg");
+    } else {
+      setImageFromURL(context, "../assets/actionSoundboardPlayImage@2x.png");
+    }
+  },
 };
-
-// Cache playback action images with a record that maps urls to their base64 encoding
-const cachedURLs = {};
 
 const playlistPlaybackAction = {
   onKeyDown: async function (context, settings) {
@@ -114,52 +127,24 @@ const playlistPlaybackAction = {
   updateImage: function (context, settings) {
     switch (settings.action) {
       case "play-pause":
-        this.setImageFromURL(context, "../assets/actionPlayPauseImage@2x.jpg");
+        setImageFromURL(context, "../assets/actionPlayPauseImage@2x.jpg");
         break;
       case "mute":
-        this.setImageFromURL(context, "../assets/actionMuteImage@2x.jpg");
+        setImageFromURL(context, "../assets/actionMuteImage@2x.jpg");
         break;
       case "decrease-volume":
-        this.setImageFromURL(
-          context,
-          "../assets/actionDecreaseVolumeImage@2x.jpg"
-        );
+        setImageFromURL(context, "../assets/actionDecreaseVolumeImage@2x.jpg");
         break;
       case "increase-volume":
-        this.setImageFromURL(
-          context,
-          "../assets/actionIncreaseVolumeImage@2x.jpg"
-        );
+        setImageFromURL(context, "../assets/actionIncreaseVolumeImage@2x.jpg");
         break;
       case "next":
-        this.setImageFromURL(context, "../assets/actionNextImage@2x.jpg");
+        setImageFromURL(context, "../assets/actionNextImage@2x.jpg");
         break;
       case "previous":
-        this.setImageFromURL(context, "../assets/actionPreviousImage@2x.jpg");
+        setImageFromURL(context, "../assets/actionPreviousImage@2x.jpg");
         break;
     }
-  },
-  setImageFromURL: function (context, url) {
-    if (url in cachedURLs) {
-      this.setImage(context, cachedURLs[url]);
-    } else {
-      toDataURL(url, (image) => {
-        this.setImage(context, image);
-        cachedURLs[url] = image;
-      });
-    }
-  },
-  setImage: function (context, image) {
-    websocket.send(
-      JSON.stringify({
-        event: "setImage",
-        context: context,
-        payload: {
-          image: image,
-          target: DestinationEnum.HARDWARE_AND_SOFTWARE,
-        },
-      })
-    );
   },
 };
 
@@ -237,25 +222,6 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent) {
 }
 
 /**
- * Convert an image from a url into base64
- * @param {string} url
- * @param {() => string} callback
- */
-function toDataURL(url, callback) {
-  var xhr = new XMLHttpRequest();
-  xhr.onload = function () {
-    var reader = new FileReader();
-    reader.onloadend = function () {
-      callback(reader.result);
-    };
-    reader.readAsDataURL(xhr.response);
-  };
-  xhr.open("GET", url);
-  xhr.responseType = "blob";
-  xhr.send();
-}
-
-/**
  * Throw an error if the given response failed
  * @param {Response} response
  */
@@ -288,6 +254,63 @@ async function api(path, method = "GET", body = {}, version = "v1") {
   return json;
 }
 
+// Cache action images with a record that maps urls to their base64 encoding
+const cachedURLs = {};
+
+/**
+ * Set the image for an action as a URL.
+ * The URL will be converted to base64 and cached for later use
+ * @param {string} context action context
+ * @param {string} url
+ */
+function setImageFromURL(context, url) {
+  if (url in cachedURLs) {
+    setImage(context, cachedURLs[url]);
+  } else {
+    toDataURL(url, (image) => {
+      setImage(context, image);
+      cachedURLs[url] = image;
+    });
+  }
+}
+
+/**
+ * Set the image for an action
+ * @param {string} context action context
+ * @param {string} image base64 encoding of the image
+ */
+function setImage(context, image) {
+  websocket.send(
+    JSON.stringify({
+      event: "setImage",
+      context: context,
+      payload: {
+        image: image,
+        target: DestinationEnum.HARDWARE_AND_SOFTWARE,
+      },
+    })
+  );
+}
+
+/**
+ * Convert an image from a url into base64
+ * @param {string} url
+ * @param {() => string} callback
+ */
+function toDataURL(url, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.onload = function () {
+    var reader = new FileReader();
+    reader.onloadend = function () {
+      callback(reader.result);
+    };
+    reader.readAsDataURL(xhr.response);
+  };
+  xhr.open("GET", url);
+  xhr.responseType = "blob";
+  xhr.send();
+}
+
 /**
  * Poll playback api for changes to the playlist or soundboard playback
  */
@@ -305,8 +328,21 @@ function startPlaybackPolling() {
     try {
       const result = await breaker.fire();
       if (result && result.playlist && result.soundboard) {
-        playback = result;
+        updatePlayback(result.playlist, result.soundboard);
       }
     } catch {}
   }, 1000);
+}
+
+function updatePlayback(playlist, soundboard) {
+  const soundIds = new Set(soundboard.sounds.map((sound) => sound.id));
+  for (let [id, context] of Object.entries(playingSounds)) {
+    // If we think we're playing a sound but the sound isn't in the playback update
+    // This can happen when sound has finished or the user has stopped the sound from the Kenku UI
+    if (!soundIds.has(id)) {
+      // Change back to a play image
+      soundboardPlayAction.updateImage(context, false);
+      delete playingSounds[id];
+    }
+  }
 }
