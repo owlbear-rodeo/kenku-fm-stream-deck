@@ -1,26 +1,21 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>fm.kenku.remote.playback.pi</title>
+    <title>fm.kenku.remote.play-id.pi</title>
     <meta charset="utf-8" />
-    <script src="playback_pi.js"></script>
+    <script src="playlist_play_pi.js"></script>
     <link rel="stylesheet" href="css/sdpi.css" />
   </head>
   <body>
-    <div class="sdpi-item" id="select_single">
-      <div class="sdpi-item-label">Action</div>
-      <select
-        class="sdpi-item-value select"
-        id="playbackSelect"
-        onchange="sendSettings()"
-      >
-        <option value="play-pause">Play/Pause</option>
-        <option value="mute">Mute</option>
-        <option value="decrease-volume">Decrease Volume</option>
-        <option value="increase-volume">Increase Volume</option>
-        <option value="next">Next Track</option>
-        <option value="previous">Previous Track</option>
-      </select>
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">ID</div>
+      <input
+        class="sdpi-item-value"
+        type="text"
+        id="id"
+        required
+        oninput="sendSettings()"
+      />
     </div>
     <div class="sdpi-item">
       <div class="sdpi-item-label">Address</div>

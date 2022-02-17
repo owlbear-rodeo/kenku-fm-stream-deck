@@ -2,7 +2,7 @@
   "Actions": [
     {
       "Icon": "assets/actionPlayIDIcon",
-      "Name": "Play ID",
+      "Name": "Play Track/Playlist",
       "States": [
         {
           "Image": "assets/actionPlayImage",
@@ -11,40 +11,12 @@
         }
       ],
       "Tooltip": "Plays a track or playlist by ID in the Kenku Player app",
-      "UUID": "fm.kenku.remote.play-id",
-      "PropertyInspectorPath": "pi/play_id_pi.html"
-    },
-    {
-      "Icon": "assets/actionPlayURLIcon",
-      "Name": "Play URL",
-      "States": [
-        {
-          "Image": "assets/actionPlayImage",
-          "TitleAlignment": "bottom",
-          "FontSize": "16"
-        }
-      ],
-      "Tooltip": "Plays a custom URL in the Kenku Player app",
-      "UUID": "fm.kenku.remote.play-url",
-      "PropertyInspectorPath": "pi/play_url_pi.html"
-    },
-    {
-      "Icon": "assets/actionPlayFileIcon",
-      "Name": "Play File",
-      "States": [
-        {
-          "Image": "assets/actionPlayImage",
-          "TitleAlignment": "bottom",
-          "FontSize": "16"
-        }
-      ],
-      "Tooltip": "Plays a file in the Kenku Player app",
-      "UUID": "fm.kenku.remote.play-file",
-      "PropertyInspectorPath": "pi/play_file_pi.html"
+      "UUID": "fm.kenku.remote.playlist-play",
+      "PropertyInspectorPath": "pi/playlist_play_pi.html"
     },
     {
       "Icon": "assets/actionPlaybackIcon",
-      "Name": "Playback",
+      "Name": "Control Playlist",
       "States": [
         {
           "Image": "assets/blankImage",
@@ -52,9 +24,9 @@
           "FontSize": "16"
         }
       ],
-      "Tooltip": "Control playback in the Kenku Player app",
-      "UUID": "fm.kenku.remote.playback",
-      "PropertyInspectorPath": "pi/playback_pi.html"
+      "Tooltip": "Control playback for a playlist in the Kenku Player app",
+      "UUID": "fm.kenku.remote.playlist-playback",
+      "PropertyInspectorPath": "pi/playlist_playback_pi.html"
     }
   ],
   "Category": "Kenku FM",

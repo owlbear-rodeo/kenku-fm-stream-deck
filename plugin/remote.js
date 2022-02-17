@@ -10,7 +10,7 @@ const DestinationEnum = Object.freeze({
 const playIDAction = {
   onKeyDown: async function (context, settings) {
     try {
-      await api(settings.address, settings.port, "play/id", "PUT", {
+      await api(settings.address, settings.port, "playlist/play", "PUT", {
         id: settings.id,
       });
     } catch (e) {
@@ -25,81 +25,74 @@ const playIDAction = {
   },
 };
 
-const playURLAction = {
-  onKeyDown: async function (context, settings) {
-    try {
-      await api(settings.address, settings.port, "play/url", "PUT", {
-        url: settings.url,
-        title: settings.title,
-      });
-    } catch (e) {
-      console.error(e);
-      websocket.send(
-        JSON.stringify({
-          event: "showAlert",
-          context: context,
-        })
-      );
-    }
-  },
-  onTitleParametersDidChange(context, settings, title) {
-    // Ignore title change if settings not hydrated yet
-    if (Object.values(settings).length === 0) {
-      return;
-    }
-    // Save title in settings so we can access it on keyDown
-    websocket.send(
-      JSON.stringify({
-        event: "setSettings",
-        context: context,
-        payload: {
-          ...settings,
-          title: title,
-        },
-      })
-    );
-  },
-};
-
 // Cache playback action images with a record that maps urls to their base64 encoding
 const cachedURLs = {};
 
 const playbackAction = {
   onKeyDown: async function (context, settings) {
     try {
-      const playback = await api(settings.address, settings.port, "playback");
+      const playback = await api(
+        settings.address,
+        settings.port,
+        "playlist/playback"
+      );
       switch (settings.action) {
         case "play-pause":
           await api(
             settings.address,
             settings.port,
-            playback.playing ? "playback/pause" : "playback/play",
+            playback.playing
+              ? "playlist/playback/pause"
+              : "playlist/playback/play",
             "PUT"
           );
           break;
         case "increase-volume":
-          await api(settings.address, settings.port, "playback/volume", "PUT", {
-            volume: playback.volume + 0.05,
-          });
+          await api(
+            settings.address,
+            settings.port,
+            "playlist/playback/volume",
+            "PUT",
+            {
+              volume: playback.volume + 0.05,
+            }
+          );
           break;
         case "decrease-volume":
-          await api(settings.address, settings.port, "playback/volume", "PUT", {
-            volume: playback.volume - 0.05,
-          });
+          await api(
+            settings.address,
+            settings.port,
+            "playlist/playback/volume",
+            "PUT",
+            {
+              volume: playback.volume - 0.05,
+            }
+          );
           break;
         case "mute":
-          await api(settings.address, settings.port, "playback/mute", "PUT", {
-            mute: !playback.muted,
-          });
+          await api(
+            settings.address,
+            settings.port,
+            "playlist/playback/mute",
+            "PUT",
+            {
+              mute: !playback.muted,
+            }
+          );
           break;
         case "next":
-          await api(settings.address, settings.port, "playback/next", "POST");
+          await api(
+            settings.address,
+            settings.port,
+            "playlist/playback/next",
+            "POST"
+          );
           break;
         case "previous":
           await api(
             settings.address,
             settings.port,
-            "playback/previous",
+            "playlist/playback/previous",
             "POST"
           );
           break;
@@ -180,10 +173,8 @@ const playbackAction = {
 };
 
 const actions = {
-  "fm.kenku.remote.play-id": playIDAction,
-  "fm.kenku.remote.play-url": playURLAction,
-  "fm.kenku.remote.play-file": playURLAction,
-  "fm.kenku.remote.playback": playbackAction,
+  "fm.kenku.remote.playlist-play": playIDAction,
+  "fm.kenku.remote.playlist-playback": playbackAction,
 };
 
 const events = [
