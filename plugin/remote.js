@@ -14,7 +14,7 @@ const DestinationEnum = Object.freeze({
   SOFTWARE_ONLY: 2,
 });
 
-const playIDAction = {
+const playlistPlayAction = {
   onKeyDown: async function (context, settings) {
     try {
       await api("playlist/play", "PUT", {
@@ -35,7 +35,7 @@ const playIDAction = {
 // Cache playback action images with a record that maps urls to their base64 encoding
 const cachedURLs = {};
 
-const playbackAction = {
+const playlistPlaybackAction = {
   onKeyDown: async function (context, settings) {
     try {
       const playback = await api("playlist/playback");
@@ -146,8 +146,8 @@ const playbackAction = {
 };
 
 const actions = {
-  "fm.kenku.remote.playlist-play": playIDAction,
-  "fm.kenku.remote.playlist-playback": playbackAction,
+  "fm.kenku.remote.playlist-play": playlistPlayAction,
+  "fm.kenku.remote.playlist-playback": playlistPlaybackAction,
 };
 
 const events = [
@@ -269,6 +269,9 @@ async function api(path, method = "GET", body = {}, version = "v1") {
   return json;
 }
 
+/**
+ * Poll playback api for changes to the playlist or soundboard playback
+ */
 function startPlaybackPolling() {
   const request = async () => {
     const playlist = await api("playlist/playback");
