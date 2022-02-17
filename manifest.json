@@ -5,7 +5,7 @@
       "Name": "Play Track/Playlist",
       "States": [
         {
-          "Image": "assets/actionPlayImage",
+          "Image": "assets/actionPlaylistPlayImage",
           "TitleAlignment": "bottom",
           "FontSize": "16"
         }
