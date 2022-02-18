@@ -21,20 +21,25 @@ function startPlaybackPolling() {
   }, 1000);
 }
 
+const playbackState = {
+  playlist: undefined,
+  soundboard: undefined,
+};
+
 /**
  * Update UI based off of playback changes
  */
 function updatePlayback(playlist, soundboard) {
   const soundIds = new Set(soundboard.sounds.map((sound) => sound.id));
-  for (let [id, context] of Object.entries(playingSounds)) {
-    // If we think we're playing a sound but the sound isn't in the playback update
-    // This can happen when sound has finished or the user has stopped the sound from the Kenku UI
-    if (!soundIds.has(id)) {
-      // Change back to a play image
-      soundboardPlayAction.updateImage(context, false);
-      delete playingSounds[id];
+  for (let [context, sound] of Object.entries(soundboardActions)) {
+    // If the playback state is different then our local playing state then update the sounds image
+    const playing = soundIds.has(sound.id);
+    if (playing !== sound.playing) {
+      soundboardActions[context].playing = playing;
+      soundboardPlayAction.updateImage(context, playing);
     }
   }
+
   // Update local playback state to match incoming state
   let playbackStateDirty = false;
   for (let key of Object.keys(playlistPlaybackAction.state)) {
@@ -50,4 +55,7 @@ function updatePlayback(playlist, soundboard) {
       playlistPlaybackAction.updateImage(context, action);
     }
   }
+
+  playbackState.playlist = playlist;
+  playbackState.soundboard = soundboard;
 }

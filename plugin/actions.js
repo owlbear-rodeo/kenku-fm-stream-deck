@@ -16,24 +16,29 @@ const playlistPlayAction = {
   },
 };
 
-// A mapping of ids to the stream deck context for sounds that are currently playing
-const playingSounds = {};
+/**
+ * A mapping of streamdeck contexts to the sound id and the playing state
+ * @type Record<string, {id: string, playing: boolean}>
+ */
+const soundboardActions = {};
 
 const soundboardPlayAction = {
   onKeyDown: async function (context, settings) {
     try {
-      if (settings.id in playingSounds) {
-        await api("soundboard/stop", "PUT", {
-          id: settings.id,
-        });
-        this.updateImage(context, false);
-        delete playingSounds[settings.id];
+      if (context in soundboardActions) {
+        if (soundboardActions[context].playing) {
+          await api("soundboard/stop", "PUT", {
+            id: settings.id,
+          });
+          this.updateImage(context, false);
+        } else {
+          await api("soundboard/play", "PUT", {
+            id: settings.id,
+          });
+          this.updateImage(context, true);
+        }
       } else {
-        await api("soundboard/play", "PUT", {
-          id: settings.id,
-        });
-        this.updateImage(context, true);
-        playingSounds[settings.id] = context;
+        throw new Error("Unable to find playback state for sound");
       }
     } catch (e) {
       console.error(e);
@@ -45,6 +50,25 @@ const soundboardPlayAction = {
       );
     }
   },
+  onDidReceiveSettings: function (context, settings) {
+    const sound = playbackState.soundboard?.sounds.find(
+      (sound) => sound.id === settings.id
+    );
+    const playing = Boolean(sound);
+    soundboardActions[context] = { id: settings.id, playing };
+    this.updateImage(context, playing);
+  },
+  onWillAppear: function (context, settings) {
+    const sound = playbackState.soundboard?.sounds.find(
+      (sound) => sound.id === settings.id
+    );
+    const playing = Boolean(sound);
+    soundboardActions[context] = { id: settings.id, playing };
+    this.updateImage(context, playing);
+  },
+  onWillDisappear: function (context) {
+    delete soundboardActions[context];
+  },
   updateImage: function (context, showStopImage) {
     if (showStopImage) {
       setImageFromURL(context, "../assets/actionSoundboardStopImage@2x.jpg");
@@ -54,7 +78,10 @@ const soundboardPlayAction = {
   },
 };
 
-// A mapping of playback contexts to their current playback actions
+/**
+ * A mapping of playback contexts to their current playback actions
+ * @type Record<string, string>
+ */
 const playbackActions = {};
 
 const playlistPlaybackAction = {
