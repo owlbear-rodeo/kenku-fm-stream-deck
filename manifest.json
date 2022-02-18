@@ -1,8 +1,8 @@
 {
   "Actions": [
     {
-      "Icon": "assets/actionPlayIDIcon",
-      "Name": "Play Track/Playlist",
+      "Icon": "assets/actionPlaylistPlayIcon",
+      "Name": "Play Playlist",
       "States": [
         {
           "Image": "assets/actionPlaylistPlayImage",
@@ -29,8 +29,8 @@
       "PropertyInspectorPath": "pi/playlist_playback_pi.html"
     },
     {
-      "Icon": "assets/actionPlayIDIcon",
-      "Name": "Play Sound/Soundboard",
+      "Icon": "assets/actionSoundboardPlayIcon",
+      "Name": "Play Soundboard",
       "States": [
         {
           "Image": "assets/actionSoundboardPlayImage",
