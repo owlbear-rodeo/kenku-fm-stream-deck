@@ -35,4 +35,19 @@ function updatePlayback(playlist, soundboard) {
       delete playingSounds[id];
     }
   }
+  // Update local playback state to match incoming state
+  let playbackStateDirty = false;
+  for (let key of Object.keys(playlistPlaybackAction.state)) {
+    if (playlist[key] !== playlistPlaybackAction.state[key]) {
+      playbackStateDirty = true;
+      playlistPlaybackAction.state[key] = playlist[key];
+    }
+  }
+
+  // Update playback images if needed
+  if (playbackStateDirty) {
+    for (let [context, action] of Object.entries(playbackActions)) {
+      playlistPlaybackAction.updateImage(context, action);
+    }
+  }
 }

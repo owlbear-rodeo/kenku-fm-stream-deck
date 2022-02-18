@@ -54,32 +54,45 @@ const soundboardPlayAction = {
   },
 };
 
+// A mapping of playback contexts to their current playback actions
+const playbackActions = {};
+
 const playlistPlaybackAction = {
+  state: {
+    playing: false,
+    repeat: "off",
+    shuffle: false,
+    muted: false,
+    volume: 1,
+  },
   onKeyDown: async function (context, settings) {
     try {
-      const playback = await api("playlist/playback");
       switch (settings.action) {
         case "play-pause":
+          this.state.playing = !this.state.playing;
           await api(
-            playback.playing
-              ? "playlist/playback/pause"
-              : "playlist/playback/play",
+            this.state.playing
+              ? "playlist/playback/play"
+              : "playlist/playback/pause",
             "PUT"
           );
           break;
         case "increase-volume":
+          this.state.volume += 0.05;
           await api("playlist/playback/volume", "PUT", {
-            volume: playback.volume + 0.05,
+            volume: this.state.volume,
           });
           break;
         case "decrease-volume":
+          this.state.volume -= 0.05;
           await api("playlist/playback/volume", "PUT", {
-            volume: playback.volume - 0.05,
+            volume: this.state.volume,
           });
           break;
         case "mute":
+          this.state.muted = !this.state.muted;
           await api("playlist/playback/mute", "PUT", {
-            mute: !playback.muted,
+            mute: this.state.muted,
           });
           break;
         case "next":
@@ -88,9 +101,32 @@ const playlistPlaybackAction = {
         case "previous":
           await api("playlist/playback/previous", "POST");
           break;
+        case "shuffle":
+          this.state.shuffle = !this.state.shuffle;
+          await api("playlist/playback/shuffle", "PUT", {
+            shuffle: this.state.shuffle,
+          });
+          break;
+        case "repeat":
+          switch (this.state.repeat) {
+            case "off":
+              this.state.repeat = "playlist";
+              break;
+            case "playlist":
+              this.state.repeat = "track";
+              break;
+            case "track":
+              this.state.repeat = "off";
+              break;
+          }
+          await api("playlist/playback/repeat", "PUT", {
+            repeat: this.state.repeat,
+          });
+          break;
         default:
           throw Error("Action not implmented");
       }
+      this.updateImage(context, settings.action);
     } catch (e) {
       console.error(e);
       websocket.send(
@@ -102,23 +138,34 @@ const playlistPlaybackAction = {
     }
   },
   onDidReceiveSettings: function (context, settings) {
-    this.updateImage(context, settings);
+    playbackActions[context] = settings.action;
+    this.updateImage(context, settings.action);
   },
   onWillAppear: function (context, settings) {
-    this.updateImage(context, settings);
+    playbackActions[context] = settings.action;
+    this.updateImage(context, settings.action);
   },
   onWillDisappear: function (context) {
+    delete playbackActions[context];
     // Hide old action when tile is disappearing to prevent
     // old data being shown when this coordinate is being used again
     this.setImageFromURL(context, "../assets/blankImage.png");
   },
-  updateImage: function (context, settings) {
-    switch (settings.action) {
+  updateImage: function (context, action) {
+    switch (action) {
       case "play-pause":
-        setImageFromURL(context, "../assets/actionPlayPauseImage@2x.jpg");
+        if (this.state.playing) {
+          setImageFromURL(context, "../assets/actionPauseImage@2x.jpg");
+        } else {
+          setImageFromURL(context, "../assets/actionPlayImage@2x.jpg");
+        }
         break;
       case "mute":
-        setImageFromURL(context, "../assets/actionMuteImage@2x.jpg");
+        if (this.state.muted) {
+          setImageFromURL(context, "../assets/actionMuteOnImage@2x.jpg");
+        } else {
+          setImageFromURL(context, "../assets/actionMuteOffImage@2x.jpg");
+        }
         break;
       case "decrease-volume":
         setImageFromURL(context, "../assets/actionDecreaseVolumeImage@2x.jpg");
@@ -131,6 +178,29 @@ const playlistPlaybackAction = {
         break;
       case "previous":
         setImageFromURL(context, "../assets/actionPreviousImage@2x.jpg");
+        break;
+      case "repeat":
+        switch (this.state.repeat) {
+          case "off":
+            setImageFromURL(context, "../assets/actionRepeatOffImage@2x.jpg");
+            break;
+          case "playlist":
+            setImageFromURL(
+              context,
+              "../assets/actionRepeatPlaylistImage@2x.jpg"
+            );
+            break;
+          case "track":
+            setImageFromURL(context, "../assets/actionRepeatTrackImage@2x.jpg");
+            break;
+        }
+        break;
+      case "shuffle":
+        if (this.state.shuffle) {
+          setImageFromURL(context, "../assets/actionShuffleOnImage@2x.jpg");
+        } else {
+          setImageFromURL(context, "../assets/actionShuffleOffImage@2x.jpg");
+        }
         break;
     }
   },
