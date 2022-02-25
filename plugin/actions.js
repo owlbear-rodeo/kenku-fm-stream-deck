@@ -30,11 +30,13 @@ const soundboardPlayAction = {
           await api("soundboard/stop", "PUT", {
             id: settings.id,
           });
+          soundboardActions[context].playing = false;
           this.updateImage(context, false);
         } else {
           await api("soundboard/play", "PUT", {
             id: settings.id,
           });
+          soundboardActions[context].playing = true;
           this.updateImage(context, true);
         }
       } else {
