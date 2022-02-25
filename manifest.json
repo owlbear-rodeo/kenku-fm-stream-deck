@@ -52,7 +52,7 @@
   "Name": "Kenku FM",
   "Icon": "assets/pluginIcon",
   "URL": "https://www.kenku.fm/",
-  "Version": "0.3",
+  "Version": "1.0.0-beta",
   "OS": [
     {
       "Platform": "mac",
